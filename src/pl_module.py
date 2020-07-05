@@ -5,10 +5,11 @@ __author__ = "tiulpin: https://kaggle.com/tiulpin"
 import pytorch_lightning as pl
 import torch
 from torch import nn
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ReduceLROnPlateau, CyclicLR
 from torch.utils.data import DataLoader
 
-from src.datasets.trends_np import TrendsNpSet
+from src.datasets.panda import PANDADataset
+from src.transforms.albu import get_train_transforms, get_val_transforms
 from src.losses.w_nae import WNAELoss
 from src.models.networks.conv3d_regressor import Conv3DRegressor
 
@@ -58,9 +59,10 @@ class CoolSystem(pl.LightningModule):
 
     def train_dataloader(self) -> torch.utils.data.DataLoader:
         return DataLoader(
-            TrendsNpSet(
+            PANDADataset(
                 mode="train",
-                config=self.hparams
+                config=self.hparams,
+                transform=get_train_transforms()
             ),
             batch_size=self.batch_size,
             num_workers=self.hparams.num_workers,
@@ -69,9 +71,10 @@ class CoolSystem(pl.LightningModule):
 
     def val_dataloader(self) -> torch.utils.data.DataLoader:
         return DataLoader(
-            TrendsNpSet(
+            PANDADataset(
                 mode="val",
                 config=self.hparams,
+                transform=get_val_transforms()
             ),
             batch_size=self.batch_size,
             num_workers=self.hparams.num_workers,
@@ -81,7 +84,7 @@ class CoolSystem(pl.LightningModule):
     # fabric
 
     def get_net(self):
-        if "conv3d_regressor" == self.hparams.net:
+        if "effnet_b0" == self.hparams.net:
             return Conv3DRegressor()
         else:
             raise NotImplementedError("Not a valid model configuration.")
@@ -91,6 +94,8 @@ class CoolSystem(pl.LightningModule):
             return WNAELoss()
         elif "l1" == self.hparams.criterion:
             return nn.L1Loss()
+        elif "bce_with_logits" == self.hparams.criterion:
+            return nn.BCEWithLogitsLoss()
         else:
             raise NotImplementedError("Not a valid criterion configuration.")
 
@@ -112,5 +117,10 @@ class CoolSystem(pl.LightningModule):
     def get_scheduler(self, optimizer) -> object:
         if "plateau" == self.hparams.scheduler:
             return ReduceLROnPlateau(optimizer)
+        elif "cyclic" == self.hparams.scheduler:
+            return CyclicLR(optimizer,
+                            base_lr=self.learning_rate / 100,
+                            max_lr=self.learning_rate,
+                            step_size_up=2000)
         else:
             raise NotImplementedError("Not a valid scheduler configuration.")
