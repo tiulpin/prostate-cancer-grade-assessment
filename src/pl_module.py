@@ -64,21 +64,23 @@ class CoolSystem(pl.LightningModule):
 
         acc = (predictions == targets).mean() * 100.
         qwk = cohen_kappa_score(predictions, targets, weights='quadratic')
-        qwk_karolinska, qwk_radbound = qwk, qwk
+        qwk_karolinska, qwk_radbound = 0, 0
 
         # calculate metrics for different data centers
         if self.val_df is not None:
             karolinska = self.val_df['data_provider'] == 'karolinska'
-            qwk_karolinska = cohen_kappa_score(
-                predictions[karolinska],
-                self.val_df[karolinska].isup_grade.values,
-                weights='quadratic')
+            if len(karolinska) == len(outputs):
+                qwk_karolinska = cohen_kappa_score(
+                    predictions[karolinska],
+                    self.val_df[karolinska].isup_grade.values,
+                    weights='quadratic')
 
             radbound = self.val_df['data_provider'] == 'radbound'
-            qwk_radbound = cohen_kappa_score(
-                predictions[radbound],
-                self.val_df[radbound].isup_grade.values,
-                weights='quadratic')
+            if len(radbound) == len(outputs):
+                qwk_radbound = cohen_kappa_score(
+                    predictions[radbound],
+                    self.val_df[radbound].isup_grade.values,
+                    weights='quadratic')
 
         val_epoch_end = {
             "val_loss": avg_loss,
