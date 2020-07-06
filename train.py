@@ -2,7 +2,7 @@
 __author__ = "tiulpin: https://kaggle.com/tiulpin"
 
 import datetime
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 import torch
 from pytorch_lightning import Trainer, loggers, seed_everything
@@ -13,7 +13,7 @@ SEED = 111
 seed_everything(111)
 
 
-def main(hparams):
+def main(hparams: Namespace):
     now = datetime.datetime.now().strftime("%d.%H")
     experiment_name = f"{now}_{hparams.net}_{hparams.criterion}_fold_{hparams.fold}"
 
@@ -32,16 +32,9 @@ if __name__ == "__main__":
     parser = ArgumentParser(add_help=False)
 
     parser.add_argument(
-        "--train_path",
-        default="../input/trends-assessment-prediction/np_train/",
-        type=str,
+        "--root_path", default="../input/prostate-cancer-grade-assessment"
     )
-    parser.add_argument(
-        "--val_path",
-        default="../input/trends-assessment-prediction/np_train/",
-        type=str,
-    )
-    parser.add_argument("--root_path", default="../input/trends-assessment-prediction")
+    parser.add_argument("--image_folder", default="train_images")
 
     parser.add_argument("--profiler", default=False, type=bool)
     parser.add_argument("--fast_dev_run", default=False, type=bool)
@@ -52,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
 
     parser.add_argument("--fold", default=0, type=int)
-    parser.add_argument("--gpus", default=1, type=int)
+    parser.add_argument("--gpus", default=6, type=int)
     parser.add_argument("--batch_size", default=16, type=int)
     parser.add_argument("--num_workers", default=30, type=int)
     parser.add_argument("--early_stop_callback", default=False, type=bool)
@@ -60,16 +53,22 @@ if __name__ == "__main__":
     parser.add_argument("--deterministic", default=True, type=bool)
     parser.add_argument("--benchmark", default=False, type=bool)
 
-    parser.add_argument("--net", default="conv3d_regressor", type=str)
-    parser.add_argument("--criterion", default="w_nae", type=str)
-    parser.add_argument("--optimizer", default="adamw", type=str)
-    parser.add_argument("--scheduler", default="plateau", type=str)
+    parser.add_argument("--net", default="effnet_b0", type=str)
+    parser.add_argument("--output_dim", default=5, type=int)
+    parser.add_argument("--criterion", default="bce_with_logits", type=str)
+    parser.add_argument("--optimizer", default="sgd", type=str)
+    parser.add_argument("--scheduler", default="cyclic", type=str)
 
     parser.add_argument("--sgd_momentum", default=0.9, type=float)
-    parser.add_argument("--sgd_wd", default=7e-4, type=float)
-    parser.add_argument("--learning_rate", default=3e-4, type=float)
+    parser.add_argument("--sgd_wd", default=1e-4, type=float)
+    parser.add_argument("--learning_rate", default=0.01, type=float)
 
-    parser.add_argument("--permutation", default=False, type=bool)
+    parser.add_argument("--imagenet_norm", default=True, type=bool)
+    parser.add_argument("--tile_size", default=256, type=int)
+    parser.add_argument("--image_size", default=256, type=int)
+    parser.add_argument("--num_tiles", default=36, type=int)
+    parser.add_argument("--random_tiles_order", default=True, type=bool)
+    parser.add_argument("--tile_mode", default=0, type=int)
 
     args = parser.parse_args()
     main(args)
