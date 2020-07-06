@@ -1,24 +1,24 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
+from argparse import Namespace, ArgumentParser
 from typing import Tuple, List
 
-import skimage.io
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import skimage.io
 import torch
 from torch.utils.data import Dataset
+from torchvision.transforms import Normalize
 
 
 class PANDADataset(Dataset):
 
-    def __init__(self, mode: str, config, transform=None):
+    def __init__(self, mode: str, config: Namespace, transform=None):
+        super().__init__()
         self.mode = mode
-        if "train" == mode:
-            self.root = config.train_path
-        elif "val" == mode:
-            self.root = config.val_path
-        else:
+        if mode not in ['train', 'val']:
             raise NotImplementedError("Not implemented dataset configuration")
 
         self.tile_size = config.tile_size
@@ -26,6 +26,9 @@ class PANDADataset(Dataset):
         self.num_tiles = config.num_tiles
         self.random_tiles_order = config.random_tiles_order
         self.tile_mode = config.tile_mode
+        self.norm = Normalize(
+            mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]) \
+            if config.imagenet_norm else None
 
         self.df = pd.read_csv(f"{config.root_path}/{mode}_{config.fold}.csv")
         self.image_folder = f"{config.root_path}/{config.image_folder}"
@@ -70,11 +73,16 @@ class PANDADataset(Dataset):
 
         images = images.astype(np.float32) / 255
         images = images.transpose(2, 0, 1)
+        images = torch.tensor(images)
+
+        if self.norm is not None:
+            images = self.norm(images)
 
         label = np.zeros(5).astype(np.float32)
         label[:row.isup_grade] = 1.
+        label = torch.tensor(label)
 
-        return torch.tensor(images), torch.tensor(label)
+        return images, label
 
     def get_tiles(self, image: np.ndarray) -> Tuple[List, bool]:
         result = []
@@ -109,3 +117,31 @@ class PANDADataset(Dataset):
             result.append({'img': image3[i], 'idx': i})
 
         return result, num_tiles_with_info >= self.num_tiles
+
+
+if __name__ == '__main__':
+    # Debug:
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--root_path", default="../input/prostate-cancer-grade-assessment"
+    )
+    parser.add_argument("--image_folder", default="train_images")
+    parser.add_argument("--fold", default=4, type=int)
+    parser.add_argument("--tile_size", default=256, type=int)
+    parser.add_argument("--imagenet_norm", default=True, type=bool)
+    parser.add_argument("--image_size", default=256, type=int)
+    parser.add_argument("--num_tiles", default=36, type=int)
+    parser.add_argument("--random_tiles_order", default=True, type=bool)
+    parser.add_argument("--tile_mode", default=0, type=int)
+
+    args = parser.parse_args()
+
+    train_ds = PANDADataset(mode='train', config=args)
+
+    from pylab import rcParams
+    rcParams['figure.figsize'] = 20, 10
+
+    img, label = train_ds[0]
+    plt.imshow(1. - img.transpose(0, 1).transpose(1, 2).squeeze())
+    plt.title(str(sum(label)))
+    plt.show()
