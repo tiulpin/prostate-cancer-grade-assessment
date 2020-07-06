@@ -59,8 +59,8 @@ class CoolSystem(pl.LightningModule):
 
     def validation_epoch_end(self, outputs: torch.tensor) -> dict:
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        predictions = torch.stack([x["preds"] for x in outputs]).cpu().numpy()
-        targets = torch.stack([x["targets"] for x in outputs]).cpu().numpy()
+        predictions = torch.cat([x["preds"] for x in outputs]).cpu().numpy()
+        targets = torch.cat([x["targets"] for x in outputs]).cpu().numpy()
 
         acc = (predictions == targets).mean() * 100.
         qwk = cohen_kappa_score(predictions, targets, weights='quadratic')
