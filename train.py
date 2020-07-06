@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--sgd_momentum", default=0.9, type=float)
     parser.add_argument("--sgd_wd", default=1e-4, type=float)
-    parser.add_argument("--learning_rate", default=0.01, type=float)
+    parser.add_argument("--learning_rate", default=0.001, type=float)
 
     parser.add_argument("--imagenet_norm", default=True, type=bool)
     parser.add_argument("--tile_size", default=256, type=int)
