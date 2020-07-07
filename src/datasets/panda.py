@@ -65,6 +65,10 @@ class PANDADataset(Dataset):
         self.random_tiles_order = config.random_tiles_order
         self.tile_mode = config.tile_mode
         self.use_preprocessed_tiles = config.use_preprocessed_tiles
+
+        if self.mode != 'train':
+            self.random_tiles_order = False
+
         self.norm = Normalize(
             mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) \
             if config.imagenet_norm else None
