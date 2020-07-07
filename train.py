@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument("--fast_dev_run", default=False, type=bool)
     parser.add_argument("--auto_lr_find", default=False, type=bool)
 
-    parser.add_argument("--val_check_interval", default=0.95, type=float)
+    parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
     parser.add_argument("--distributed_backend", default="ddp", type=str)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=4, type=int)
     parser.add_argument("--num_workers", default=30, type=int)
     parser.add_argument("--early_stop_callback", default=False, type=bool)
-    parser.add_argument("--max_epochs", default=50, type=int)
+    parser.add_argument("--max_epochs", default=150, type=int)
     parser.add_argument("--deterministic", default=True, type=bool)
     parser.add_argument("--benchmark", default=False, type=bool)
 
@@ -57,12 +57,13 @@ if __name__ == "__main__":
     parser.add_argument("--output_dim", default=5, type=int)
     parser.add_argument("--criterion", default="bce_with_logits", type=str)
     parser.add_argument("--optimizer", default="sgd", type=str)
-    parser.add_argument("--scheduler", default="cyclic", type=str)
+    parser.add_argument("--scheduler", default="plateau", type=str)
 
     parser.add_argument("--sgd_momentum", default=0.9, type=float)
     parser.add_argument("--sgd_wd", default=1e-4, type=float)
-    parser.add_argument("--learning_rate", default=0.001, type=float)
+    parser.add_argument("--learning_rate", default=3e-4, type=float)
 
+    parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
     parser.add_argument("--imagenet_norm", default=True, type=bool)
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
