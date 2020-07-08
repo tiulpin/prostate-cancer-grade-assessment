@@ -40,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument("--fast_dev_run", default=False, type=bool)
     parser.add_argument("--auto_lr_find", default=False, type=bool)
 
+    parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
