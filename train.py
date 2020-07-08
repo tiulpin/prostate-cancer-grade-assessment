@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument("--distributed_backend", default="ddp", type=str)
     parser.add_argument("--fold", default=0, type=int)
     parser.add_argument("--gpus", default=6, type=int)
-    parser.add_argument("--batch_size", default=4, type=int)
+    parser.add_argument("--batch_size", default=2, type=int)
     parser.add_argument("--num_workers", default=30, type=int)
     parser.add_argument("--early_stop_callback", default=False, type=bool)
     parser.add_argument("--max_epochs", default=150, type=int)
@@ -62,6 +62,8 @@ if __name__ == "__main__":
     parser.add_argument("--sgd_momentum", default=0.9, type=float)
     parser.add_argument("--sgd_wd", default=1e-4, type=float)
     parser.add_argument("--learning_rate", default=3e-4, type=float)
+    # warmup_steps = 8493 / batch_size
+    parser.add_argument("--warmup_steps", default=4247, type=int)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
     parser.add_argument("--imagenet_norm", default=True, type=bool)
