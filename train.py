@@ -40,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument("--fast_dev_run", default=False, type=bool)
     parser.add_argument("--auto_lr_find", default=False, type=bool)
 
+    parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--fold", default=0, type=int)
     parser.add_argument("--gpus", default=6, type=int)
     parser.add_argument("--batch_size", default=2, type=int)
-    parser.add_argument("--num_workers", default=30, type=int)
+    parser.add_argument("--num_workers", default=8, type=int)
     parser.add_argument("--early_stop_callback", default=False, type=bool)
     parser.add_argument("--max_epochs", default=150, type=int)
     parser.add_argument("--deterministic", default=True, type=bool)
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
-    parser.add_argument("--random_tiles_order", default=True, type=bool)
+    parser.add_argument("--random_tiles_order", default=False, type=bool)
     parser.add_argument("--tile_mode", default=0, type=int)
 
     args = parser.parse_args()
