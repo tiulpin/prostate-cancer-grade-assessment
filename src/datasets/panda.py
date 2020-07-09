@@ -65,13 +65,19 @@ class PANDADataset(Dataset):
         self.random_tiles_order = config.random_tiles_order
         self.tile_mode = config.tile_mode
         self.use_preprocessed_tiles = config.use_preprocessed_tiles
+        self.norm = None
 
         if self.mode != 'train':
             self.random_tiles_order = False
 
-        self.norm = Normalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) \
-            if config.imagenet_norm else None
+        if config.normalize == 'imagenet':
+            self.norm = Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
+        elif config.normalize == 'own':
+            stats_df = pd.read_csv(f"{config.root_path}/stats_{config.fold}.csv")
+            self.norm = Normalize(
+                mean=stats_df['mean'].tolist(), std=stats_df['std'].tolist())
 
         self.df = pd.read_csv(f"{config.root_path}/{mode}_{config.fold}.csv")
         self.image_folder = f"{config.root_path}/{config.image_folder}"
@@ -143,7 +149,8 @@ if __name__ == '__main__':
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--fold", default=4, type=int)
     parser.add_argument("--tile_size", default=256, type=int)
-    parser.add_argument("--imagenet_norm", default=True, type=bool)
+    parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],
+                        default='none', type=str)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
     parser.add_argument("--random_tiles_order", default=True, type=bool)

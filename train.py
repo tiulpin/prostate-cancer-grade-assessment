@@ -67,7 +67,8 @@ if __name__ == "__main__":
     parser.add_argument("--warmup_steps", default=0, type=int)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
-    parser.add_argument("--imagenet_norm", default=True, type=bool)
+    parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],
+                        default='imagenet', type=str)
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
