@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
-    parser.add_argument("--distributed_backend", default="horovod", type=str)
+    # parser.add_argument("--distributed_backend", default="horovod", type=str)
     parser.add_argument("--fold", default=0, type=int)
     parser.add_argument("--gpus", default=1, type=int)
     parser.add_argument("--batch_size", default=6, type=int)
