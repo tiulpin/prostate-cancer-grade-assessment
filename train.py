@@ -63,6 +63,7 @@ if __name__ == "__main__":
     parser.add_argument("--sgd_momentum", default=0.9, type=float)
     parser.add_argument("--sgd_wd", default=1e-4, type=float)
     parser.add_argument("--learning_rate", default=3e-4, type=float)
+    parser.add_argument("--gradient_clip_val", default=10, type=float)
     # warmup_steps = 8493 / batch_size
     parser.add_argument("--warmup_steps", default=1416, type=int)
 
