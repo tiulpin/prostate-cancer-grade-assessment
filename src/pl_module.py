@@ -107,22 +107,22 @@ class CoolSystem(pl.LightningModule):
 
         return [optimizer], [scheduler]
 
-    def optimizer_step(self, epoch: int, batch_idx: int,
-                       optimizer: Optimizer, optimizer_idx: int,
-                       second_order_closure: Optional[Callable] = None,
-                       on_tpu: bool = False, using_native_amp: bool = False,
-                       using_lbfgs: bool = False) -> None:
-
-        if self.trainer.global_step < self.hparams.warmup_steps:
-            lr_scale = min(1., float(
-                self.trainer.global_step + 1) / self.hparams.warmup_steps)
-            for pg in optimizer.param_groups:
-                pg['lr'] = lr_scale * self.hparams.learning_rate
-
-        optimizer.step()
-
-        # https://github.com/PyTorchLightning/pytorch-lightning/issues/2343
-        # optimizer.zero_grad()
+    # def optimizer_step(self, epoch: int, batch_idx: int,
+    #                    optimizer: Optimizer, optimizer_idx: int,
+    #                    second_order_closure: Optional[Callable] = None,
+    #                    on_tpu: bool = False, using_native_amp: bool = False,
+    #                    using_lbfgs: bool = False) -> None:
+    #
+    #     if self.trainer.global_step < self.hparams.warmup_steps:
+    #         lr_scale = min(1., float(
+    #             self.trainer.global_step + 1) / self.hparams.warmup_steps)
+    #         for pg in optimizer.param_groups:
+    #             pg['lr'] = lr_scale * self.hparams.learning_rate
+    #
+    #     optimizer.step()
+    #
+    #     # https://github.com/PyTorchLightning/pytorch-lightning/issues/2343
+    #     # optimizer.zero_grad()
 
     def train_dataloader(self) -> torch.utils.data.DataLoader:
         train_dataset = PANDADataset(
