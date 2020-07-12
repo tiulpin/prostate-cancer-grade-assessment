@@ -14,6 +14,7 @@ from typing import Optional, Callable
 
 from src.datasets.panda import PANDADataset
 from src.models.networks.effnet_regressor import EffNetRegressor
+from src.models.networks.resnext_regressor import ResNeXtRegressor
 from src.transforms.albu import get_train_transforms, get_val_transforms
 
 
@@ -188,6 +189,10 @@ class CoolSystem(pl.LightningModule):
         elif self.hparams.net == "tf_effnet_b7":
             return EffNetRegressor(
                 'tf_efficientnet_b7_ns', self.hparams.output_dim)
+
+        elif self.hparams.net == 'resnext50':
+            return ResNeXtRegressor(
+                'resnext50_32x4d', self.hparams.output_dim)
 
         else:
             raise NotImplementedError("Not a valid model configuration.")
