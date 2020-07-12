@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--root_path", default="../input/prostate-cancer-grade-assessment"
     )
+    parser.add_argument("--resume_from_checkpoint", default=None, type=str)
     parser.add_argument("--image_folder", default="train_images")
 
     parser.add_argument("--profiler", default=False, type=bool)
