@@ -23,7 +23,7 @@ def main(hparams: Namespace):
     trainer = Trainer.from_argparse_args(hparams)
     trainer.logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
     trainer.checkpoint_callback = ModelCheckpoint(
-        filepath=f"weights/{experiment_name}_best_qwk.pth",
+        filepath=f"weights/{experiment_name}_" + "best_qwk_{qwk:.2f}.pth",
         monitor='qwk', save_weights_only=True)
     trainer.callbacks.append(LearningRateLogger())
     trainer.fit(model)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--fast_dev_run", default=False, type=bool)
     parser.add_argument("--auto_lr_find", default=False, type=bool)
 
-    # parser.add_argument("--precision", default=16, type=int)
+    parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)

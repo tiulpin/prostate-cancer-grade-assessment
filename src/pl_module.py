@@ -88,7 +88,7 @@ class CoolSystem(pl.LightningModule):
         val_epoch_end = {
             "val_loss": avg_loss,
             "acc": acc,
-            "qwk": qwk,
+            "qwk": torch.tensor(qwk),
             "qwk_karolinska": qwk_karolinska,
             "qwk_radbound": qwk_radbound,
             "log": {
