@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 
 import torch
 from pytorch_lightning import Trainer, loggers, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateLogger
 
 from src.pl_module import CoolSystem
 
@@ -18,9 +19,13 @@ def main(hparams: Namespace):
     experiment_name = f"{now}_{hparams.net}_{hparams.criterion}_fold_{hparams.fold}"
 
     model = CoolSystem(hparams=hparams)
+
     trainer = Trainer.from_argparse_args(hparams)
     trainer.logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
-
+    trainer.checkpoint_callback = ModelCheckpoint(
+        filepath=f"weights/{experiment_name}_best_qwk.pth",
+        monitor='qwk', save_weights_only=True)
+    trainer.callbacks.append(LearningRateLogger())
     trainer.fit(model)
 
     # to make submission without lightning
@@ -40,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--fast_dev_run", default=False, type=bool)
     parser.add_argument("--auto_lr_find", default=False, type=bool)
 
-    parser.add_argument("--precision", default=16, type=int)
+    # parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--val_check_interval", default=1.0, type=float)
     parser.add_argument("--limit_train_batches", default=1.0, type=float)
     parser.add_argument("--limit_val_batches", default=1.0, type=float)
