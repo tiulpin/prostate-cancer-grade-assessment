@@ -20,12 +20,19 @@ def main(hparams: Namespace):
 
     model = CoolSystem(hparams=hparams)
 
-    trainer = Trainer.from_argparse_args(hparams)
-    trainer.logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
-    trainer.checkpoint_callback = ModelCheckpoint(
-        filepath=f"weights/{experiment_name}_" + "best_qwk_{qwk:.2f}.pth",
+    logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
+    callbacks = [LearningRateLogger()]
+    checkpoint_callback = ModelCheckpoint(
+        filepath=f"weights/{experiment_name}_" + "best_qwk_{qwk:.2f}",
         monitor='qwk', save_weights_only=True)
-    trainer.callbacks.append(LearningRateLogger())
+
+    # a weird way to add arguments to Trainer constructor, but we'll take it
+    hparams.__dict__['logger'] = logger
+    hparams.__dict__['callbacks'] = callbacks
+    hparams.__dict__['checkpoint_callback'] = checkpoint_callback
+
+    trainer = Trainer.from_argparse_args(hparams)
+
     trainer.fit(model)
 
     # to make submission without lightning
