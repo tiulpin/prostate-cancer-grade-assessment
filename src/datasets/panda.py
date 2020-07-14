@@ -53,7 +53,8 @@ def get_tiles(image: np.ndarray,
 
 class PANDADataset(Dataset):
 
-    def __init__(self, mode: str, config: Namespace, transform=None):
+    def __init__(self, mode: str, config: Namespace,
+                 individual_transform=None, global_transform=None):
         super().__init__()
         self.mode = mode
         if mode not in ['train', 'val']:
@@ -65,6 +66,7 @@ class PANDADataset(Dataset):
         self.random_tiles_order = config.random_tiles_order
         self.tile_mode = config.tile_mode
         self.use_preprocessed_tiles = config.use_preprocessed_tiles
+        self.use_cleaned_data = config.use_cleaned_data
         self.norm = None
 
         if self.mode != 'train':
@@ -79,9 +81,14 @@ class PANDADataset(Dataset):
             self.norm = Normalize(
                 mean=stats_df['mean'].tolist(), std=stats_df['std'].tolist())
 
-        self.df = pd.read_csv(f"{config.root_path}/{mode}_{config.fold}.csv")
+        self.df = pd.read_csv(
+            f"{config.root_path}/{mode}_cleaned_{config.fold}.csv")\
+            if self.use_cleaned_data else pd.read_csv(
+            f"{config.root_path}/{mode}_{config.fold}.csv")
+
         self.image_folder = f"{config.root_path}/{config.image_folder}"
-        self.transform = transform
+        self.individual_transform = individual_transform
+        self.global_transform = global_transform
 
     def __len__(self) -> int:
         return self.df.shape[0]
@@ -115,15 +122,15 @@ class PANDADataset(Dataset):
                     else np.full((self.image_size, self.image_size, 3), 255)
                 this_img = 255 - this_img
 
-                if self.transform is not None:
-                    this_img = self.transform(image=this_img)['image']
+                if self.individual_transform is not None:
+                    this_img = self.individual_transform(image=this_img)['image']
 
                 h1 = h * self.image_size
                 w1 = w * self.image_size
                 images[h1:h1 + self.image_size, w1:w1 + self.image_size] = this_img
 
-        if self.transform is not None:
-            images = self.transform(image=images)['image']
+        if self.global_transform is not None:
+            images = self.global_transform(image=images)['image']
 
         images = images.astype(np.float32) / 255
         images = images.transpose(2, 0, 1)
@@ -154,16 +161,24 @@ if __name__ == '__main__':
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
     parser.add_argument("--random_tiles_order", default=True, type=bool)
+    parser.add_argument("--use_cleaned_data", default=False, type=bool)
     parser.add_argument("--tile_mode", default=0, type=int)
 
     args = parser.parse_args()
 
-    train_ds = PANDADataset(mode='train', config=args)
-
     from pylab import rcParams
+    import sys
+    sys.path.append('.')
+    from src.transforms.albu import get_individual_transforms, get_global_transforms
+
+    train_ds = PANDADataset(mode='train', config=args,
+                            individual_transform=get_individual_transforms(),
+                            global_transform=get_global_transforms())
+
     rcParams['figure.figsize'] = 20, 10
 
-    img, label = train_ds[0]
-    plt.imshow(1. - img.transpose(0, 1).transpose(1, 2).squeeze())
-    plt.title(str(sum(label)))
-    plt.show()
+    for _ in range(5):
+        img, label = train_ds[0]
+        plt.imshow(1. - img.transpose(0, 1).transpose(1, 2).squeeze())
+        plt.title(str(sum(label)))
+        plt.show()

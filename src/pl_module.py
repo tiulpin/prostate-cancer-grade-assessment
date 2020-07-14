@@ -6,16 +6,19 @@ import pytorch_lightning as pl
 import torch
 from sklearn.metrics import cohen_kappa_score
 from torch import nn
-from torch.optim.lr_scheduler import ReduceLROnPlateau, CyclicLR
+from torch.optim.lr_scheduler import (
+    ReduceLROnPlateau, CyclicLR, CosineAnnealingLR)
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from typing import Optional, Callable
+from warmup_scheduler import GradualWarmupScheduler
 
 from src.datasets.panda import PANDADataset
-from src.models.networks.effnet_regressor import EffNetRegressor
+from src.models.networks.effnet_regressor import (
+    EffNetRegressor, EffNetDoubleRegressor)
 from src.models.networks.resnext_regressor import ResNeXtRegressor
-from src.transforms.albu import get_train_transforms, get_val_transforms
+from src.transforms.albu import get_individual_transforms, get_global_transforms
 
 
 class CoolSystem(pl.LightningModule):
@@ -108,29 +111,13 @@ class CoolSystem(pl.LightningModule):
 
         return [optimizer], [scheduler]
 
-    # def optimizer_step(self, epoch: int, batch_idx: int,
-    #                    optimizer: Optimizer, optimizer_idx: int,
-    #                    second_order_closure: Optional[Callable] = None,
-    #                    on_tpu: bool = False, using_native_amp: bool = False,
-    #                    using_lbfgs: bool = False) -> None:
-    #
-    #     if self.trainer.global_step < self.hparams.warmup_steps:
-    #         lr_scale = min(1., float(
-    #             self.trainer.global_step + 1) / self.hparams.warmup_steps)
-    #         for pg in optimizer.param_groups:
-    #             pg['lr'] = lr_scale * self.hparams.learning_rate
-    #
-    #     optimizer.step()
-    #
-    #     # https://github.com/PyTorchLightning/pytorch-lightning/issues/2343
-    #     # optimizer.zero_grad()
-
     def train_dataloader(self) -> torch.utils.data.DataLoader:
         train_dataset = PANDADataset(
                 mode="train",
                 config=self.hparams,
-                transform=get_train_transforms()
-            )
+                individual_transform=get_individual_transforms(),
+                global_transform=get_global_transforms()
+        )
 
         return DataLoader(
             train_dataset,
@@ -144,8 +131,7 @@ class CoolSystem(pl.LightningModule):
         val_dataset = PANDADataset(
                 mode="val",
                 config=self.hparams,
-                transform=get_val_transforms()
-            )
+        )
 
         self.val_df = val_dataset.df
 
@@ -172,6 +158,10 @@ class CoolSystem(pl.LightningModule):
 
         elif self.hparams.net == "effnet_b3":
             return EffNetRegressor(
+                'efficientnet_b3', self.hparams.output_dim)
+
+        elif self.hparams.net == "double_effnet_b3":
+            return EffNetDoubleRegressor(
                 'efficientnet_b3', self.hparams.output_dim)
 
         elif self.hparams.net == "tf_effnet_b4":
@@ -228,5 +218,15 @@ class CoolSystem(pl.LightningModule):
                             base_lr=self.learning_rate / 100,
                             max_lr=self.learning_rate,
                             step_size_up=4000 / self.batch_size)
+        elif "cosine" == self.hparams.scheduler:
+            return CosineAnnealingLR(optimizer, self.hparams.max_epochs)
+        elif "cosine+warmup" == self.hparams.scheduler:
+            cosine = CosineAnnealingLR(
+                optimizer, self.hparams.max_epochs - self.hparams.warmup_epochs)
+            return GradualWarmupScheduler(
+                optimizer,
+                multiplier=self.hparams.warmup_factor,
+                total_epoch=self.hparams.warmup_epochs,
+                after_scheduler=cosine)
         else:
             raise NotImplementedError("Not a valid scheduler configuration.")
