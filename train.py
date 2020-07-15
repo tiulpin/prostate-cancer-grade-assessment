@@ -24,7 +24,7 @@ def main(hparams: Namespace):
     callbacks = [LearningRateLogger()]
     checkpoint_callback = ModelCheckpoint(
         filepath=f"weights/{experiment_name}_" + "best_qwk_{qwk:.2f}",
-        monitor='qwk', save_weights_only=True, save_top_k=5)
+        monitor='qwk', save_top_k=5, mode='max', save_last=True)
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
     hparams.__dict__['logger'] = logger
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("--early_stop_callback", default=False, type=bool)
     parser.add_argument("--warmup_epochs", default=10, type=int)
     parser.add_argument("--warmup_factor", default=1., type=int)
-    parser.add_argument("--max_epochs", default=150, type=int)
+    parser.add_argument("--max_epochs", default=100, type=int)
     parser.add_argument("--deterministic", default=True, type=bool)
     parser.add_argument("--benchmark", default=True, type=bool)
 
