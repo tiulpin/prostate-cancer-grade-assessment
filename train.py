@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_workers", default=8, type=int)
     parser.add_argument("--early_stop_callback", default=False, type=bool)
     parser.add_argument("--warmup_epochs", default=10, type=int)
-    parser.add_argument("--warmup_factor", default=10, type=int)
+    parser.add_argument("--warmup_factor", default=1., type=int)
     parser.add_argument("--max_epochs", default=150, type=int)
     parser.add_argument("--deterministic", default=True, type=bool)
     parser.add_argument("--benchmark", default=True, type=bool)
@@ -80,8 +80,6 @@ if __name__ == "__main__":
     parser.add_argument("--sgd_wd", default=1e-4, type=float)
     parser.add_argument("--learning_rate", default=3e-4, type=float)
     parser.add_argument("--gradient_clip_val", default=10, type=float)
-    # warmup_steps = 8493 / batch_size
-    parser.add_argument("--warmup_steps", default=1416, type=int)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
     parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],

@@ -12,12 +12,12 @@ from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from typing import Optional, Callable
-from warmup_scheduler import GradualWarmupScheduler
 
 from src.datasets.panda import PANDADataset
 from src.models.networks.effnet_regressor import (
     EffNetRegressor, EffNetDoubleRegressor)
 from src.models.networks.resnext_regressor import ResNeXtRegressor
+from src.schedulers.warmup import GradualWarmupScheduler
 from src.transforms.albu import get_individual_transforms, get_global_transforms
 
 
@@ -148,12 +148,24 @@ class CoolSystem(pl.LightningModule):
             return EffNetRegressor(
                 'efficientnet_b0', self.hparams.output_dim)
 
+        elif self.hparams.net == "double_effnet_b0":
+            return EffNetDoubleRegressor(
+                'efficientnet_b0', self.hparams.output_dim)
+
         elif self.hparams.net == "effnet_b1":
             return EffNetRegressor(
                 'efficientnet_b1', self.hparams.output_dim)
 
+        elif self.hparams.net == "double_effnet_b1":
+            return EffNetDoubleRegressor(
+                'efficientnet_b1', self.hparams.output_dim)
+
         elif self.hparams.net == "effnet_b2":
             return EffNetRegressor(
+                'efficientnet_b2', self.hparams.output_dim)
+
+        elif self.hparams.net == "double_effnet_b2":
+            return EffNetDoubleRegressor(
                 'efficientnet_b2', self.hparams.output_dim)
 
         elif self.hparams.net == "effnet_b3":
@@ -213,6 +225,13 @@ class CoolSystem(pl.LightningModule):
     def get_scheduler(self, optimizer) -> object:
         if "plateau" == self.hparams.scheduler:
             return ReduceLROnPlateau(optimizer)
+        elif "plateau+warmup" == self.hparams.scheduler:
+            plateau = ReduceLROnPlateau(optimizer)
+            return GradualWarmupScheduler(
+                optimizer,
+                multiplier=self.hparams.warmup_factor,
+                total_epoch=self.hparams.warmup_epochs,
+                after_scheduler=plateau)
         elif "cyclic" == self.hparams.scheduler:
             return CyclicLR(optimizer,
                             base_lr=self.learning_rate / 100,
