@@ -57,7 +57,7 @@ class PANDADataset(Dataset):
                  individual_transform=None, global_transform=None):
         super().__init__()
         self.mode = mode
-        if mode not in ['train', 'val']:
+        if mode not in ['train', 'val', 'holdout']:
             raise NotImplementedError("Not implemented dataset configuration")
 
         self.tile_size = config.tile_size
@@ -81,10 +81,14 @@ class PANDADataset(Dataset):
             self.norm = Normalize(
                 mean=stats_df['mean'].tolist(), std=stats_df['std'].tolist())
 
-        self.df = pd.read_csv(
-            f"{config.root_path}/{mode}_cleaned_{config.fold}.csv")\
-            if self.use_cleaned_data else pd.read_csv(
-            f"{config.root_path}/{mode}_{config.fold}.csv")
+        if self.mode == 'holdout':
+            self.df = pd.read_csv(f"{config.root_path}/holdout.csv")
+
+        else:
+            self.df = pd.read_csv(
+                f"{config.root_path}/{mode}_cleaned_{config.fold}.csv")\
+                if self.use_cleaned_data else pd.read_csv(
+                f"{config.root_path}/{mode}_{config.fold}.csv")
 
         self.image_folder = f"{config.root_path}/{config.image_folder}"
         self.individual_transform = individual_transform

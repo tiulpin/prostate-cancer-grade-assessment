@@ -157,61 +157,47 @@ class CoolSystem(pl.LightningModule):
             pin_memory=True,
         )
 
-    def get_net(self) -> torch.nn.Module:
-        if self.hparams.net == "effnet_b0":
-            return EffNetRegressor(
-                'efficientnet_b0', self.hparams.output_dim)
-
-        elif self.hparams.net == "double_effnet_b0":
-            return EffNetDoubleRegressor(
-                'efficientnet_b0', self.hparams.output_dim)
-
-        elif self.hparams.net == "effnet_b1":
-            return EffNetRegressor(
-                'efficientnet_b1', self.hparams.output_dim)
-
-        elif self.hparams.net == "double_effnet_b1":
-            return EffNetDoubleRegressor(
-                'efficientnet_b1', self.hparams.output_dim)
-
-        elif self.hparams.net == "effnet_b2":
-            return EffNetRegressor(
-                'efficientnet_b2', self.hparams.output_dim)
-
-        elif self.hparams.net == "double_effnet_b2":
-            return EffNetDoubleRegressor(
-                'efficientnet_b2', self.hparams.output_dim)
-
-        elif self.hparams.net == "effnet_b3":
-            return EffNetRegressor(
-                'efficientnet_b3', self.hparams.output_dim)
-
-        elif self.hparams.net == "double_effnet_b3":
-            return EffNetDoubleRegressor(
-                'efficientnet_b3', self.hparams.output_dim)
-
-        elif self.hparams.net == "tf_effnet_b4":
-            return EffNetRegressor(
-                'tf_efficientnet_b4_ns', self.hparams.output_dim)
-
-        elif self.hparams.net == "tf_effnet_b5":
-            return EffNetRegressor(
-                'tf_efficientnet_b5_ns', self.hparams.output_dim)
-
-        elif self.hparams.net == "tf_effnet_b6":
-            return EffNetRegressor(
-                'tf_efficientnet_b6_ns', self.hparams.output_dim)
-
-        elif self.hparams.net == "tf_effnet_b7":
-            return EffNetRegressor(
-                'tf_efficientnet_b7_ns', self.hparams.output_dim)
-
-        elif self.hparams.net == 'resnext50':
-            return ResNeXtRegressor(
-                'resnext50_32x4d', self.hparams.output_dim)
-
+    @staticmethod
+    def net_mapping(model_name: str, output_dim: int = 5) -> torch.nn.Module:
+        if model_name == 'effnet_b0':
+            return EffNetRegressor('efficientnet_b0', output_dim)
+        elif model_name == 'double_effnet_b0':
+            return EffNetDoubleRegressor('efficientnet_b0', output_dim)
+        elif model_name == 'effnet_b1':
+            return EffNetRegressor('efficientnet_b1', output_dim)
+        elif model_name == 'double_effnet_b1':
+            return EffNetDoubleRegressor('efficientnet_b1', output_dim)
+        elif model_name == 'effnet_b2':
+            return EffNetRegressor('efficientnet_b2', output_dim)
+        elif model_name == 'double_effnet_b2':
+            return EffNetDoubleRegressor('efficientnet_b2', output_dim)
+        elif model_name == 'effnet_b3':
+            return EffNetRegressor('efficientnet_b3', output_dim)
+        elif model_name == 'double_effnet_b3':
+            return EffNetDoubleRegressor('efficientnet_b3', output_dim)
+        elif model_name == 'effnet_b4':
+            return EffNetRegressor('tf_efficientnet_b4_ns', output_dim)
+        elif model_name == 'double_effnet_b4':
+            return EffNetDoubleRegressor('tf_efficientnet_b4_ns', output_dim)
+        elif model_name == 'effnet_b5':
+            return EffNetRegressor('tf_efficientnet_b5_ns', output_dim)
+        elif model_name == 'double_effnet_b5':
+            return EffNetDoubleRegressor('tf_efficientnet_b5_ns', output_dim)
+        elif model_name == 'effnet_b6':
+            return EffNetRegressor('tf_efficientnet_b6_ns', output_dim)
+        elif model_name == 'double_effnet_b6':
+            return EffNetDoubleRegressor('tf_efficientnet_b6_ns', output_dim)
+        elif model_name == 'effnet_b7':
+            return EffNetRegressor('tf_efficientnet_b7_ns', output_dim)
+        elif model_name == 'double_effnet_b7':
+            return EffNetDoubleRegressor('tf_efficientnet_b7_ns', output_dim)
+        elif model_name == 'resnext50':
+            return ResNeXtRegressor('resnext50_32x4d', output_dim)
         else:
             raise NotImplementedError("Not a valid model configuration.")
+
+    def get_net(self) -> torch.nn.Module:
+        return CoolSystem.net_mapping(self.hparams.net, self.hparams.output_dim)
 
     def get_criterion(self):
         if "l1" == self.hparams.criterion:
