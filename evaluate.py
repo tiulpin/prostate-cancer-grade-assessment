@@ -116,8 +116,12 @@ def main(hparams: Namespace):
         predictions.append(pred)
         predictions_threshold.append(pred_thr)
 
-    predictions = np.array(predictions).sum(axis=0) / len(models)
-    predictions_threshold = np.array(predictions_threshold).sum(axis=0) / len(models)
+    if len(models) > 1:
+        predictions = np.array(predictions).sum(axis=0) / len(models)
+        predictions_threshold = np.array(predictions_threshold).sum(axis=0) / len(models)
+    else:
+        predictions = predictions[0]
+        predictions_threshold = predictions_threshold[0]
 
     qwk = cohen_kappa_score(predictions, gt_class, weights='quadratic')
     qwk_thr = cohen_kappa_score(predictions_threshold, gt_class, weights='quadratic')
