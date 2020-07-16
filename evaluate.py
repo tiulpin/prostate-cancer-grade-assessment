@@ -77,9 +77,9 @@ def run_predictions(model: torch.nn.Module,
                     tta_pred_threshold.append(pred_threshold)
 
                 pred = torch.round(
-                    (torch.stack(tta_pred).sum(0) / len(tta_transforms)).double())
+                    (torch.stack(tta_pred).sum(0).double() / len(tta_transforms)))
                 pred_threshold = torch.round(
-                    (torch.stack(tta_pred_threshold).sum(0) / len(tta_transforms)).double())
+                    (torch.stack(tta_pred_threshold).sum(0).double() / len(tta_transforms)))
 
             else:
                 y_hat = model(x)
