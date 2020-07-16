@@ -10,7 +10,7 @@ import numpy as np
 
 from pytorch_lightning import seed_everything
 from torch.utils.data import DataLoader
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import cohen_kappa_score, confusion_matrix
 from tqdm.auto import tqdm
 
 from src.datasets.panda import PANDADataset
@@ -127,7 +127,9 @@ def main(hparams: Namespace):
     qwk_thr = cohen_kappa_score(predictions_threshold, gt_class, weights='quadratic')
 
     print('QWK with sum strategy: {:.4f}'.format(qwk))
+    print(confusion_matrix(gt_class, predictions))
     print('QWK with threshold strategy: {:.4f}'.format(qwk_thr))
+    print(confusion_matrix(gt_class, predictions_threshold))
 
 
 if __name__ == "__main__":
