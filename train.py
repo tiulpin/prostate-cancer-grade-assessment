@@ -23,8 +23,8 @@ def main(hparams: Namespace):
     logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
     callbacks = [LearningRateLogger()]
     checkpoint_callback = ModelCheckpoint(
-        filepath=f"weights/{experiment_name}_" + "best_qwk_{qwk:.2f}",
-        monitor='qwk', save_top_k=5, mode='max', save_last=True)
+        filepath=f"weights/{experiment_name}_" + "best_{qwk:.4f}",
+        monitor='qwk', save_top_k=10, mode='max', save_last=True)
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
     hparams.__dict__['logger'] = logger

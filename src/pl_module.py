@@ -4,14 +4,12 @@ __author__ = "sevakon: https://kaggle.com/sevakon"
 
 import pytorch_lightning as pl
 import torch
+
 from sklearn.metrics import cohen_kappa_score
-from torch import nn
 from torch.optim.lr_scheduler import (
     ReduceLROnPlateau, CyclicLR, CosineAnnealingLR)
-from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
-from typing import Optional, Callable
 
 from src.datasets.panda import PANDADataset
 from src.models.networks.effnet_regressor import (
@@ -53,23 +51,36 @@ class CoolSystem(pl.LightningModule):
         x, y = batch
         y_hat = self.forward(x)
         preds = y_hat.sigmoid().sum(1).detach().round()
+        preds_threshold = (y_hat.sigmoid().detach() >= 0.5).sum(1)
         targets = y.sum(1)
 
         val_step = {
             "val_loss": self.criterion(y_hat, y),
             "preds": preds,
+            "preds_threshold": preds_threshold,
             "targets": targets
         }
 
         return val_step
 
     def validation_epoch_end(self, outputs: torch.tensor) -> dict:
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
-        predictions = torch.cat([x["preds"] for x in outputs]).cpu().numpy()
-        targets = torch.cat([x["targets"] for x in outputs]).cpu().numpy()
+        avg_loss = torch.stack(
+            [x["val_loss"] for x in outputs]).mean()
+        predictions = torch.cat(
+            [x["preds"] for x in outputs]).cpu().numpy()
+        predictions_threshold = torch.cat(
+            [x["preds_threshold"] for x in outputs]).cpu().numpy()
+        targets = torch.cat(
+            [x["targets"] for x in outputs]).cpu().numpy()
 
         acc = (predictions == targets).mean() * 100.
-        qwk = cohen_kappa_score(predictions, targets, weights='quadratic')
+        acc_threshold = (predictions_threshold == targets).mean() * 100.
+
+        qwk = cohen_kappa_score(
+            predictions, targets, weights='quadratic')
+        qwk_threshold = cohen_kappa_score(
+            predictions_threshold, targets, weights='quadratic')
+
         qwk_karolinska, qwk_radbound = 0, 0
 
         # calculate metrics for different data centers
@@ -88,16 +99,19 @@ class CoolSystem(pl.LightningModule):
                     self.val_df[radbound].isup_grade.values,
                     weights='quadratic')
 
+        monitor_qwk = torch.tensor(max(qwk, qwk_threshold))
+        monitor_acc = torch.tensor(max(acc, acc_threshold))
+
         val_epoch_end = {
             "val_loss": avg_loss,
-            "acc": acc,
-            "qwk": torch.tensor(qwk),
-            "qwk_karolinska": qwk_karolinska,
-            "qwk_radbound": qwk_radbound,
+            "acc": monitor_acc,
+            "qwk": monitor_qwk,
             "log": {
                 f"val/avg_{self.hparams.criterion}": avg_loss,
                 "val/acc": acc,
+                "val/acc_threshold": acc_threshold,
                 "val/qwk": qwk,
+                "val/qwk_threshold": qwk_threshold,
                 "val/qwk_karolinska": qwk_karolinska,
                 "val/qwk_radbound": qwk_radbound,
             }
@@ -143,7 +157,7 @@ class CoolSystem(pl.LightningModule):
             pin_memory=True,
         )
 
-    def get_net(self):
+    def get_net(self) -> torch.nn.Module:
         if self.hparams.net == "effnet_b0":
             return EffNetRegressor(
                 'efficientnet_b0', self.hparams.output_dim)
@@ -201,9 +215,9 @@ class CoolSystem(pl.LightningModule):
 
     def get_criterion(self):
         if "l1" == self.hparams.criterion:
-            return nn.L1Loss()
+            return torch.nn.L1Loss()
         elif "bce_with_logits" == self.hparams.criterion:
-            return nn.BCEWithLogitsLoss()
+            return torch.nn.BCEWithLogitsLoss()
         else:
             raise NotImplementedError("Not a valid criterion configuration.")
 
