@@ -23,8 +23,8 @@ def main(hparams: Namespace):
     logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
     callbacks = [LearningRateLogger()]
     checkpoint_callback = ModelCheckpoint(
-        filepath=f"weights/{experiment_name}_" + "best_{qwk:.4f}",
-        monitor='qwk', save_top_k=10, mode='max', save_last=True)
+        filepath=f"weights/{experiment_name}_" + "best_{val_loss:.4f}_{qwk:.4f}",
+        monitor='val_loss', save_top_k=10, mode='min', save_last=True)
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
     hparams.__dict__['logger'] = logger
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpus", default=1, type=int)
     parser.add_argument("--batch_size", default=6, type=int)
     parser.add_argument("--num_workers", default=8, type=int)
-    parser.add_argument("--early_stop_callback", default=False, type=bool)
+    parser.add_argument("--early_stop_callback", default=True, type=bool)
     parser.add_argument("--warmup_epochs", default=10, type=int)
     parser.add_argument("--warmup_factor", default=1., type=int)
     parser.add_argument("--max_epochs", default=100, type=int)
