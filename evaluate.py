@@ -123,15 +123,18 @@ def main(hparams: Namespace):
         predictions = predictions[0]
         predictions_threshold = predictions_threshold[0]
 
+    predictions = np.rint(predictions).astype(int)
+    predictions_threshold = np.rint(predictions_threshold).astype(int)
+
     qwk = cohen_kappa_score(
-        predictions.astype(int), gt_class, weights='quadratic')
+        predictions, gt_class, weights='quadratic')
     qwk_thr = cohen_kappa_score(
-        predictions_threshold.astype(int), gt_class, weights='quadratic')
+        predictions_threshold, gt_class, weights='quadratic')
 
     print('QWK with sum strategy: {:.4f}'.format(qwk))
-    print(confusion_matrix(gt_class, predictions.astype(int)))
+    print(confusion_matrix(gt_class, predictions))
     print('QWK with threshold strategy: {:.4f}'.format(qwk_thr))
-    print(confusion_matrix(gt_class, predictions_threshold.astype(int)))
+    print(confusion_matrix(gt_class, predictions_threshold))
 
 
 if __name__ == "__main__":
