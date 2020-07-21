@@ -123,13 +123,15 @@ def main(hparams: Namespace):
         predictions = predictions[0]
         predictions_threshold = predictions_threshold[0]
 
-    qwk = cohen_kappa_score(predictions, gt_class, weights='quadratic')
-    qwk_thr = cohen_kappa_score(predictions_threshold, gt_class, weights='quadratic')
+    qwk = cohen_kappa_score(
+        predictions.astype(int), gt_class, weights='quadratic')
+    qwk_thr = cohen_kappa_score(
+        predictions_threshold.astype(int), gt_class, weights='quadratic')
 
     print('QWK with sum strategy: {:.4f}'.format(qwk))
-    print(confusion_matrix(gt_class, predictions))
+    print(confusion_matrix(gt_class, predictions.astype(int)))
     print('QWK with threshold strategy: {:.4f}'.format(qwk_thr))
-    print(confusion_matrix(gt_class, predictions_threshold))
+    print(confusion_matrix(gt_class, predictions_threshold.astype(int)))
 
 
 if __name__ == "__main__":
