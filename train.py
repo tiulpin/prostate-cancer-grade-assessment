@@ -26,7 +26,7 @@ def main(hparams: Namespace):
         filepath=f"weights/{experiment_name}_" + "best_{val_loss:.4f}_{qwk:.4f}",
         monitor='val_loss', save_top_k=10, mode='min', save_last=True)
     early_stop_callback = EarlyStopping(
-        monitor='val_loss', patience=10, mode='min', verbose=True)
+        monitor='val_loss', patience=13, mode='min', verbose=True)
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
     hparams.__dict__['logger'] = logger
