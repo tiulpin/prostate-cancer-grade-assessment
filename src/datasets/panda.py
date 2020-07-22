@@ -1,7 +1,7 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -13,30 +13,34 @@ from torch.utils.data import Dataset
 from torchvision.transforms import Normalize
 
 
-def get_tiles(image: np.ndarray,
-              tile_size: int = 256,
-              num_tiles: int = 36,
-              tile_mode=0) -> Tuple[np.ndarray, bool]:
+def get_tiles(
+    image: np.ndarray, tile_size: int = 256, num_tiles: int = 36, tile_mode=0
+) -> Tuple[np.ndarray, bool]:
     result = []
     height, width, _ = image.shape
 
-    pad_h = (tile_size - height % tile_size) % tile_size + \
-            (tile_size * tile_mode // 2)
-    pad_w = (tile_size - width % tile_size) % tile_size + \
-            (tile_size * tile_mode // 2)
+    pad_h = (tile_size - height % tile_size) % tile_size + (tile_size * tile_mode // 2)
+    pad_w = (tile_size - width % tile_size) % tile_size + (tile_size * tile_mode // 2)
 
-    padding = [[pad_h // 2, pad_h - pad_h // 2],
-               [pad_w // 2, pad_w - pad_w // 2], [0, 0]]
+    padding = [
+        [pad_h // 2, pad_h - pad_h // 2],
+        [pad_w // 2, pad_w - pad_w // 2],
+        [0, 0],
+    ]
     image2 = np.pad(image, padding, constant_values=255)
 
     image3 = image2.reshape(
-        image2.shape[0] // tile_size, tile_size,
-        image2.shape[1] // tile_size, tile_size, 3)
-    image3 = image3.transpose(0, 2, 1, 3, 4).reshape(
-        -1, tile_size, tile_size, 3)
+        image2.shape[0] // tile_size,
+        tile_size,
+        image2.shape[1] // tile_size,
+        tile_size,
+        3,
+    )
+    image3 = image3.transpose(0, 2, 1, 3, 4).reshape(-1, tile_size, tile_size, 3)
 
-    num_tiles_with_info = (image3.reshape(image3.shape[0], -1).sum(1) <
-                           tile_size ** 2 * 3 * 255).sum()
+    num_tiles_with_info = (
+        image3.reshape(image3.shape[0], -1).sum(1) < tile_size ** 2 * 3 * 255
+    ).sum()
 
     if len(image3) < num_tiles:
         padding = [[0, num_tiles - len(image3)], [0, 0], [0, 0], [0, 0]]
@@ -52,12 +56,16 @@ def get_tiles(image: np.ndarray,
 
 
 class PANDADataset(Dataset):
-
-    def __init__(self, mode: str, config: Namespace,
-                 individual_transform=None, global_transform=None):
+    def __init__(
+        self,
+        mode: str,
+        config: Namespace,
+        individual_transform=None,
+        global_transform=None,
+    ):
         super().__init__()
         self.mode = mode
-        if mode not in ['train', 'val', 'holdout']:
+        if mode not in ["train", "val", "holdout"]:
             raise NotImplementedError("Not implemented dataset configuration")
 
         self.tile_size = config.tile_size
@@ -69,26 +77,27 @@ class PANDADataset(Dataset):
         self.use_cleaned_data = config.use_cleaned_data
         self.norm = None
 
-        if self.mode != 'train':
+        if self.mode != "train":
             self.random_tiles_order = False
 
-        if config.normalize == 'imagenet':
-            self.norm = Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        if config.normalize == "imagenet":
+            self.norm = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
-        elif config.normalize == 'own':
+        elif config.normalize == "own":
             stats_df = pd.read_csv(f"{config.root_path}/stats_{config.fold}.csv")
             self.norm = Normalize(
-                mean=stats_df['mean'].tolist(), std=stats_df['std'].tolist())
+                mean=stats_df["mean"].tolist(), std=stats_df["std"].tolist()
+            )
 
-        if self.mode == 'holdout':
+        if self.mode == "holdout":
             self.df = pd.read_csv(f"{config.root_path}/holdout.csv")
 
         else:
-            self.df = pd.read_csv(
-                f"{config.root_path}/{mode}_cleaned_{config.fold}.csv")\
-                if self.use_cleaned_data else pd.read_csv(
-                f"{config.root_path}/{mode}_{config.fold}.csv")
+            self.df = (
+                pd.read_csv(f"{config.root_path}/{mode}_cleaned_{config.fold}.csv")
+                if self.use_cleaned_data
+                else pd.read_csv(f"{config.root_path}/{mode}_{config.fold}.csv")
+            )
 
         self.image_folder = f"{config.root_path}/{config.image_folder}"
         self.individual_transform = individual_transform
@@ -107,12 +116,13 @@ class PANDADataset(Dataset):
         else:
             tiff_file = f"{self.image_folder}/{img_id}.tiff"
             image = skimage.io.MultiImage(tiff_file)[1]
-            tiles, _ = get_tiles(
-                image, self.tile_size, self.num_tiles, self.tile_mode)
+            tiles, _ = get_tiles(image, self.tile_size, self.num_tiles, self.tile_mode)
 
-        idxes = np.random.choice(
-            list(range(self.num_tiles)), self.num_tiles, replace=False) \
-            if self.random_tiles_order else list(range(self.num_tiles))
+        idxes = (
+            np.random.choice(list(range(self.num_tiles)), self.num_tiles, replace=False)
+            if self.random_tiles_order
+            else list(range(self.num_tiles))
+        )
 
         num_row_tiles = int(np.sqrt(self.num_tiles))
         result_size = self.image_size * num_row_tiles
@@ -122,19 +132,22 @@ class PANDADataset(Dataset):
             for w in range(num_row_tiles):
                 i = h * num_row_tiles + w
 
-                this_img = tiles[idxes[i]] if len(tiles) > idxes[i] \
+                this_img = (
+                    tiles[idxes[i]]
+                    if len(tiles) > idxes[i]
                     else np.full((self.image_size, self.image_size, 3), 255)
+                )
                 this_img = 255 - this_img
 
                 if self.individual_transform is not None:
-                    this_img = self.individual_transform(image=this_img)['image']
+                    this_img = self.individual_transform(image=this_img)["image"]
 
                 h1 = h * self.image_size
                 w1 = w * self.image_size
-                images[h1:h1 + self.image_size, w1:w1 + self.image_size] = this_img
+                images[h1 : h1 + self.image_size, w1 : w1 + self.image_size] = this_img
 
         if self.global_transform is not None:
-            images = self.global_transform(image=images)['image']
+            images = self.global_transform(image=images)["image"]
 
         images = images.astype(np.float32) / 255
         images = images.transpose(2, 0, 1)
@@ -144,13 +157,13 @@ class PANDADataset(Dataset):
             images = self.norm(images)
 
         label = np.zeros(5).astype(np.float32)
-        label[:row.isup_grade] = 1.
+        label[: row.isup_grade] = 1.0
         label = torch.tensor(label)
 
         return images, label
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Debug:
     parser = ArgumentParser(add_help=False)
     parser.add_argument(
@@ -160,8 +173,9 @@ if __name__ == '__main__':
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--fold", default=4, type=int)
     parser.add_argument("--tile_size", default=256, type=int)
-    parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],
-                        default='none', type=str)
+    parser.add_argument(
+        "--normalize", choices=["imagenet", "own", "none"], default="none", type=str
+    )
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
     parser.add_argument("--random_tiles_order", default=True, type=bool)
@@ -170,19 +184,24 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    from pylab import rcParams
     import sys
-    sys.path.append('.')
-    from src.transforms.albu import get_individual_transforms, get_global_transforms
 
-    train_ds = PANDADataset(mode='train', config=args,
-                            individual_transform=get_individual_transforms(),
-                            global_transform=get_global_transforms())
+    from pylab import rcParams
 
-    rcParams['figure.figsize'] = 20, 10
+    sys.path.append(".")
+    from src.transforms.albu import get_global_transforms, get_individual_transforms
+
+    train_ds = PANDADataset(
+        mode="train",
+        config=args,
+        individual_transform=get_individual_transforms(),
+        global_transform=get_global_transforms(),
+    )
+
+    rcParams["figure.figsize"] = 20, 10
 
     for _ in range(5):
         img, label = train_ds[0]
-        plt.imshow(1. - img.transpose(0, 1).transpose(1, 2).squeeze())
+        plt.imshow(1.0 - img.transpose(0, 1).transpose(1, 2).squeeze())
         plt.title(str(sum(label)))
         plt.show()

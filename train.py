@@ -7,7 +7,11 @@ from argparse import ArgumentParser, Namespace
 import torch
 from pytorch_lightning import Trainer, loggers, seed_everything
 from pytorch_lightning.callbacks import (
-    ModelCheckpoint, LearningRateLogger, EarlyStopping)
+    EarlyStopping,
+    LearningRateLogger,
+    ModelCheckpoint,
+)
+
 from src.pl_module import CoolSystem
 
 SEED = 111
@@ -24,15 +28,20 @@ def main(hparams: Namespace):
     callbacks = [LearningRateLogger()]
     checkpoint_callback = ModelCheckpoint(
         filepath=f"weights/{experiment_name}_" + "best_{val_loss:.4f}_{qwk:.4f}",
-        monitor='val_loss', save_top_k=10, mode='min', save_last=True)
+        monitor="val_loss",
+        save_top_k=10,
+        mode="min",
+        save_last=True,
+    )
     early_stop_callback = EarlyStopping(
-        monitor='val_loss', patience=13, mode='min', verbose=True)
+        monitor="val_loss", patience=13, mode="min", verbose=True
+    )
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
-    hparams.__dict__['logger'] = logger
-    hparams.__dict__['callbacks'] = callbacks
-    hparams.__dict__['checkpoint_callback'] = checkpoint_callback
-    hparams.__dict__['early_stop_callback'] = early_stop_callback
+    hparams.__dict__["logger"] = logger
+    hparams.__dict__["callbacks"] = callbacks
+    hparams.__dict__["checkpoint_callback"] = checkpoint_callback
+    hparams.__dict__["early_stop_callback"] = early_stop_callback
 
     trainer = Trainer.from_argparse_args(hparams)
 
@@ -67,7 +76,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=6, type=int)
     parser.add_argument("--num_workers", default=8, type=int)
     parser.add_argument("--warmup_epochs", default=10, type=int)
-    parser.add_argument("--warmup_factor", default=1., type=int)
+    parser.add_argument("--warmup_factor", default=1.0, type=int)
     parser.add_argument("--max_epochs", default=100, type=int)
     parser.add_argument("--deterministic", default=True, type=bool)
     parser.add_argument("--benchmark", default=True, type=bool)
@@ -84,8 +93,9 @@ if __name__ == "__main__":
     parser.add_argument("--gradient_clip_val", default=10, type=float)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
-    parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],
-                        default='imagenet', type=str)
+    parser.add_argument(
+        "--normalize", choices=["imagenet", "own", "none"], default="imagenet", type=str
+    )
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)

@@ -1,15 +1,15 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
+import sys
 from argparse import ArgumentParser, Namespace
+
+import numpy as np
+import pandas as pd
+import skimage.io
 from tqdm import tqdm
 
-import pandas as pd
-import numpy as np
-import skimage.io
-import sys
-
-sys.path.append('.')
+sys.path.append(".")
 
 from src.datasets.panda import get_tiles
 
@@ -46,19 +46,17 @@ def welford_algo(image: np.ndarray, mean: list, m2: list, num_pixels: int):
 def main(config: Namespace):
     train_data = pd.read_csv(f"{config.root_path}/train_{config.fold}.csv")
 
-    mean = np.array([0., 0., 0.])
-    m2 = np.array([0., 0., 0.])
+    mean = np.array([0.0, 0.0, 0.0])
+    m2 = np.array([0.0, 0.0, 0.0])
     num_pixels = 0
 
     for img_id in tqdm(train_data.image_id):
         if config.use_preprocessed:
-            npy_file = f"{config.root_path}/" \
-                       f"{config.image_folder}/{img_id}.npy"
+            npy_file = f"{config.root_path}/" f"{config.image_folder}/{img_id}.npy"
             tiles = np.load(npy_file)
 
         else:
-            tiff_file = f"{config.root_path}/" \
-                        f"{config.image_folder}/{img_id}.tiff"
+            tiff_file = f"{config.root_path}/" f"{config.image_folder}/{img_id}.tiff"
             image = skimage.io.MultiImage(tiff_file)[1]
             tiles, _ = get_tiles(image, config.tile_size, config.num_tiles)
 
@@ -72,14 +70,18 @@ def main(config: Namespace):
             for w in range(num_row_tiles):
                 i = h * num_row_tiles + w
 
-                this_img = tiles[idxes[i]] if len(tiles) > idxes[i] \
+                this_img = (
+                    tiles[idxes[i]]
+                    if len(tiles) > idxes[i]
                     else np.full((config.image_size, config.image_size, 3), 255)
+                )
                 this_img = 255 - this_img
 
                 h1 = h * config.image_size
                 w1 = w * config.image_size
-                images[h1:h1 + config.image_size,
-                       w1:w1 + config.image_size] = this_img
+                images[
+                    h1 : h1 + config.image_size, w1 : w1 + config.image_size
+                ] = this_img
 
         images = images.astype(np.float32) / 255
 

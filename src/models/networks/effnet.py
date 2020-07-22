@@ -8,10 +8,9 @@ import torch.nn as nn
 from src.models.layers.adaptive import AdaptiveConcatPool2d
 
 
-class EffNetRegressor(nn.Module):
-
+class EffNetClassifier(nn.Module):
     def __init__(self, backbone: str, out_dim: int):
-        super(EffNetRegressor, self).__init__()
+        super(EffNetClassifier, self).__init__()
         self.backbone = timm.create_model(backbone, pretrained=True)
         self.fc = nn.Linear(self.backbone.classifier.in_features, out_dim)
         self.backbone.classifier = nn.Identity()
@@ -22,10 +21,9 @@ class EffNetRegressor(nn.Module):
         return x
 
 
-class EffNetDoubleRegressor(nn.Module):
-
+class EffNetDoubleClassifier(nn.Module):
     def __init__(self, backbone: str, out_dim: int):
-        super(EffNetDoubleRegressor, self).__init__()
+        super(EffNetDoubleClassifier, self).__init__()
         backbone = timm.create_model(backbone, pretrained=True)
         dimension = backbone.classifier.in_features
         self.backbone = nn.Sequential(*list(backbone.children())[:-2])
@@ -37,7 +35,8 @@ class EffNetDoubleRegressor(nn.Module):
             nn.Linear(2 * dimension, dimension // 2),
             nn.ReLU(),
             nn.Dropout(0.15),
-            nn.Linear(dimension // 2, out_dim))
+            nn.Linear(dimension // 2, out_dim),
+        )
         self.backbone.classifier = nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -46,8 +45,8 @@ class EffNetDoubleRegressor(nn.Module):
         return x
 
 
-if __name__ == '__main__':
-    model = EffNetDoubleRegressor('efficientnet_b0', 5)
+if __name__ == "__main__":
+    model = EffNetDoubleClassifier("efficientnet_b0", 5)
     print(model)
     x = torch.randn((1, 3, 500, 500))
     out = model(x)

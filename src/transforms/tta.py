@@ -1,10 +1,9 @@
-import torch
-
 from itertools import product
+
+import torch
 
 
 class ProstateTTA:
-
     def augment(self, image):
         raise NotImplementedError
 
@@ -13,7 +12,6 @@ class ProstateTTA:
 
 
 class HorizontalFlipTTA(ProstateTTA):
-
     def augment(self, image):
         return image.flip(1)
 
@@ -22,7 +20,6 @@ class HorizontalFlipTTA(ProstateTTA):
 
 
 class VerticalFlipTTA(ProstateTTA):
-
     def augment(self, image):
         return image.flip(2)
 
@@ -31,7 +28,6 @@ class VerticalFlipTTA(ProstateTTA):
 
 
 class Rotate90TTA(ProstateTTA):
-
     def augment(self, image):
         return torch.rot90(image, 1, (1, 2))
 

@@ -1,15 +1,15 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
+import sys
 from argparse import ArgumentParser, Namespace
+
+import numpy as np
+import pandas as pd
+import skimage.io
 from tqdm import tqdm
 
-import pandas as pd
-import numpy as np
-import skimage.io
-import sys
-
-sys.path.append('.')
+sys.path.append(".")
 
 from src.datasets.panda import get_tiles
 

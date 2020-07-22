@@ -4,18 +4,17 @@ __author__ = "sevakon: https://kaggle.com/sevakon"
 import datetime
 from argparse import ArgumentParser, Namespace
 
+import numpy as np
 import torch
 import torch.utils
-import numpy as np
-
 from pytorch_lightning import seed_everything
-from torch.utils.data import DataLoader
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
+from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from src.datasets.panda import PANDADataset
-from src.transforms.tta import d4_tta
 from src.pl_module import CoolSystem
+from src.transforms.tta import d4_tta
 
 SEED = 111
 seed_everything(111)
@@ -34,11 +33,12 @@ def get_test_dataloder(hparams: Namespace) -> DataLoader:
 
 def load_model(model_name: str, weights: str):
     model = CoolSystem.net_mapping(model_name, 5)
-    model.load_state_dict(torch.load(
-        weights, map_location=lambda storage, loc: storage), strict=True)
+    model.load_state_dict(
+        torch.load(weights, map_location=lambda storage, loc: storage), strict=True
+    )
     model.eval()
     model.cuda()
-    print('Loaded model {} from checkpoint {}'.format(model_name, weights))
+    print("Loaded model {} from checkpoint {}".format(model_name, weights))
     return model
 
 
@@ -53,10 +53,12 @@ def get_ground_truth(loader: DataLoader):
     return gt
 
 
-def run_predictions(model: torch.nn.Module,
-                    loader: DataLoader,
-                    precision: int = 16,
-                    use_tta: bool = False):
+def run_predictions(
+    model: torch.nn.Module,
+    loader: DataLoader,
+    precision: int = 16,
+    use_tta: bool = False,
+):
     preds, preds_threshold = list(), list()
     tta_transforms = d4_tta()
 
@@ -77,9 +79,14 @@ def run_predictions(model: torch.nn.Module,
                     tta_pred_threshold.append(pred_threshold)
 
                 pred = torch.round(
-                    (torch.stack(tta_pred).sum(0).double() / len(tta_transforms)))
+                    (torch.stack(tta_pred).sum(0).double() / len(tta_transforms))
+                )
                 pred_threshold = torch.round(
-                    (torch.stack(tta_pred_threshold).sum(0).double() / len(tta_transforms)))
+                    (
+                        torch.stack(tta_pred_threshold).sum(0).double()
+                        / len(tta_transforms)
+                    )
+                )
 
             else:
                 y_hat = model(x)
@@ -95,8 +102,9 @@ def run_predictions(model: torch.nn.Module,
 
 
 def main(hparams: Namespace):
-    assert len(hparams.nets) == len(hparams.weights_paths), \
-        'Please provide equal number of weights paths and model names'
+    assert len(hparams.nets) == len(
+        hparams.weights_paths
+    ), "Please provide equal number of weights paths and model names"
 
     loader = get_test_dataloder(hparams)
     models = list()
@@ -112,13 +120,16 @@ def main(hparams: Namespace):
 
     for model in models:
         pred, pred_thr = run_predictions(
-            model, loader, hparams.precision, hparams.test_time_aug)
+            model, loader, hparams.precision, hparams.test_time_aug
+        )
         predictions.append(pred)
         predictions_threshold.append(pred_thr)
 
     if len(models) > 1:
         predictions = np.array(predictions).sum(axis=0) / len(models)
-        predictions_threshold = np.array(predictions_threshold).sum(axis=0) / len(models)
+        predictions_threshold = np.array(predictions_threshold).sum(axis=0) / len(
+            models
+        )
     else:
         predictions = predictions[0]
         predictions_threshold = predictions_threshold[0]
@@ -126,14 +137,12 @@ def main(hparams: Namespace):
     predictions = np.rint(predictions).astype(int)
     predictions_threshold = np.rint(predictions_threshold).astype(int)
 
-    qwk = cohen_kappa_score(
-        predictions, gt_class, weights='quadratic')
-    qwk_thr = cohen_kappa_score(
-        predictions_threshold, gt_class, weights='quadratic')
+    qwk = cohen_kappa_score(predictions, gt_class, weights="quadratic")
+    qwk_thr = cohen_kappa_score(predictions_threshold, gt_class, weights="quadratic")
 
-    print('QWK with sum strategy: {:.4f}'.format(qwk))
+    print("QWK with sum strategy: {:.4f}".format(qwk))
     print(confusion_matrix(gt_class, predictions))
-    print('QWK with threshold strategy: {:.4f}'.format(qwk_thr))
+    print("QWK with threshold strategy: {:.4f}".format(qwk_thr))
     print(confusion_matrix(gt_class, predictions_threshold))
 
 
@@ -148,18 +157,18 @@ if __name__ == "__main__":
 
     parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--test_time_aug", default=False, type=bool)
-    parser.add_argument('--mode', choices=['val', 'holdout'],
-                        default='val', type=str)
+    parser.add_argument("--mode", choices=["val", "holdout"], default="val", type=str)
     parser.add_argument("--fold", default=0, type=int)
     parser.add_argument("--batch_size", default=6, type=int)
     parser.add_argument("--num_workers", default=8, type=int)
 
-    parser.add_argument("--weights_paths", nargs='+', required=True)
-    parser.add_argument("--nets", nargs='+', required=True)
+    parser.add_argument("--weights_paths", nargs="+", required=True)
+    parser.add_argument("--nets", nargs="+", required=True)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
-    parser.add_argument('--normalize', choices=['imagenet', 'own', 'none'],
-                        default='imagenet', type=str)
+    parser.add_argument(
+        "--normalize", choices=["imagenet", "own", "none"], default="imagenet", type=str
+    )
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
