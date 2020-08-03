@@ -25,7 +25,7 @@ def main(hparams: Namespace):
     model = CoolSystem(hparams=hparams)
 
     logger = loggers.TensorBoardLogger(
-        f"logs/",
+        "logs/",
         name=experiment_name,
     )
     callbacks = [LearningRateLogger()]
