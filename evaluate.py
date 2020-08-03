@@ -99,9 +99,10 @@ def run_predictions(
 
 
 def main(hparams: Namespace):
-    assert len(hparams.nets) == len(
+    if len(hparams.nets) != len(
         hparams.weights_paths
-    ), "Please provide equal number of weights paths and model names"
+    ):
+        raise AssertionError("Please provide equal number of weights paths and model names")
 
     loader = get_test_dataloder(hparams)
     models = []
