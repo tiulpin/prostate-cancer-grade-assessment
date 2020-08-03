@@ -35,8 +35,9 @@ def average_weights(state_dicts: List[dict]):
 
 
 def main(checkpoint_paths: List[str], save_to_path: str):
-    if (len(checkpoint_paths) <= 1):
-        raise AssertionError("Please provide more than 1 checkpoints to average")
+    if len(checkpoint_paths) <= 1:
+        raise AssertionError(
+            "Please provide more than 1 checkpoints to average")
 
     state_dicts = [torch.load(path) for path in checkpoint_paths]
     dict_to_save = average_weights(state_dicts)
