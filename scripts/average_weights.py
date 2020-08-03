@@ -22,10 +22,10 @@ def average_weights(state_dicts: List[dict]):
             last_keys = dictionary.keys()
             continue
 
-        if (
-            last_keys != dictionary.keys()
-        ):
-            raise AssertionError("Provided checkpoints have different set of keys, check your models")
+        if last_keys != dictionary.keys():
+            raise AssertionError(
+                "Provided checkpoints have different set of keys, check your models"
+            )
 
         last_keys = dictionary.keys()
 
