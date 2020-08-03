@@ -1,7 +1,5 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon"
-
-import datetime
 from argparse import ArgumentParser, Namespace
 
 import numpy as np
