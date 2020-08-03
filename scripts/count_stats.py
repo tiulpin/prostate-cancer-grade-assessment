@@ -1,4 +1,6 @@
 # coding: utf-8
+from src.datasets.panda import get_tiles
+
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
 import sys
@@ -10,8 +12,6 @@ import skimage.io
 from tqdm import tqdm
 
 sys.path.append(".")
-
-from src.datasets.panda import get_tiles
 
 
 def welford_algo(image: np.ndarray, mean: list, m2: list, num_pixels: int):
@@ -71,17 +71,14 @@ def main(config: Namespace):
                 i = h * num_row_tiles + w
 
                 this_img = (
-                    tiles[idxes[i]]
-                    if len(tiles) > idxes[i]
-                    else np.full((config.image_size, config.image_size, 3), 255)
-                )
+                    tiles[idxes[i]] if len(tiles) > idxes[i] else np.full(
+                        (config.image_size, config.image_size, 3), 255))
                 this_img = 255 - this_img
 
                 h1 = h * config.image_size
                 w1 = w * config.image_size
-                images[
-                    h1 : h1 + config.image_size, w1 : w1 + config.image_size
-                ] = this_img
+                images[h1:h1 + config.image_size,
+                       w1:w1 + config.image_size] = this_img
 
         images = images.astype(np.float32) / 255
 
@@ -97,9 +94,8 @@ def main(config: Namespace):
 if __name__ == "__main__":
     parser = ArgumentParser(add_help=False)
 
-    parser.add_argument(
-        "--root_path", default="../input/prostate-cancer-grade-assessment"
-    )
+    parser.add_argument("--root_path",
+                        default="../input/prostate-cancer-grade-assessment")
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--use_preprocessed", default=True, type=bool)
     parser.add_argument("--fold", default=0, type=int)

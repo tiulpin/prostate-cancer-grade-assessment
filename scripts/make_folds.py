@@ -14,10 +14,11 @@ def main():
 
     skf = StratifiedKFold(5, shuffle=True, random_state=SEED)
     for fold, (trn_idx, val_idx) in enumerate(
-        skf.split(train_data, train_data["isup_grade"])
-    ):
-        train_data.loc[trn_idx].to_csv(f"{ROOT_PATH}/train_{fold}.csv", index=False)
-        train_data.loc[val_idx].to_csv(f"{ROOT_PATH}/val_{fold}.csv", index=False)
+            skf.split(train_data, train_data["isup_grade"])):
+        train_data.loc[trn_idx].to_csv(f"{ROOT_PATH}/train_{fold}.csv",
+                                       index=False)
+        train_data.loc[val_idx].to_csv(f"{ROOT_PATH}/val_{fold}.csv",
+                                       index=False)
 
 
 if __name__ == "__main__":

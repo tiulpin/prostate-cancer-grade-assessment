@@ -1,7 +1,6 @@
 # coding: utf-8
 __author__ = "sevakon: https://kaggle.com/sevakon & tiulpin: https://kaggle.com/sevakon"
 
-
 import pytorch_lightning as pl
 import torch
 from sklearn.metrics import cohen_kappa_score
@@ -39,7 +38,9 @@ class CoolSystem(pl.LightningModule):
 
         train_step = {
             "loss": loss,
-            "log": {f"train/{self.hparams.criterion}": loss},
+            "log": {
+                f"train/{self.hparams.criterion}": loss
+            },
         }
 
         return train_step
@@ -63,18 +64,17 @@ class CoolSystem(pl.LightningModule):
     def validation_epoch_end(self, outputs: torch.tensor) -> dict:
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         predictions = torch.cat([x["preds"] for x in outputs]).cpu().numpy()
-        predictions_threshold = (
-            torch.cat([x["preds_threshold"] for x in outputs]).cpu().numpy()
-        )
+        predictions_threshold = (torch.cat(
+            [x["preds_threshold"] for x in outputs]).cpu().numpy())
         targets = torch.cat([x["targets"] for x in outputs]).cpu().numpy()
 
         acc = (predictions == targets).mean() * 100.0
         acc_threshold = (predictions_threshold == targets).mean() * 100.0
 
         qwk = cohen_kappa_score(predictions, targets, weights="quadratic")
-        qwk_threshold = cohen_kappa_score(
-            predictions_threshold, targets, weights="quadratic"
-        )
+        qwk_threshold = cohen_kappa_score(predictions_threshold,
+                                          targets,
+                                          weights="quadratic")
 
         qwk_karolinska, qwk_radbound = 0, 0
 
@@ -139,7 +139,10 @@ class CoolSystem(pl.LightningModule):
         )
 
     def val_dataloader(self) -> torch.utils.data.DataLoader:
-        val_dataset = PANDADataset(mode="val", config=self.hparams,)
+        val_dataset = PANDADataset(
+            mode="val",
+            config=self.hparams,
+        )
 
         self.val_df = val_dataset.df
 
@@ -191,7 +194,8 @@ class CoolSystem(pl.LightningModule):
             raise NotImplementedError("Not a valid model configuration.")
 
     def get_net(self) -> torch.nn.Module:
-        return CoolSystem.net_mapping(self.hparams.net, self.hparams.output_dim)
+        return CoolSystem.net_mapping(self.hparams.net,
+                                      self.hparams.output_dim)
 
     def get_criterion(self):
         if "l1" == self.hparams.criterion:
@@ -203,9 +207,11 @@ class CoolSystem(pl.LightningModule):
 
     def get_optimizer(self) -> object:
         if "adam" == self.hparams.optimizer:
-            return torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
+            return torch.optim.Adam(self.net.parameters(),
+                                    lr=self.learning_rate)
         elif "adamw" == self.hparams.optimizer:
-            return torch.optim.AdamW(self.net.parameters(), lr=self.learning_rate)
+            return torch.optim.AdamW(self.net.parameters(),
+                                     lr=self.learning_rate)
         elif "sgd" == self.hparams.optimizer:
             return torch.optim.SGD(
                 self.net.parameters(),
@@ -238,8 +244,8 @@ class CoolSystem(pl.LightningModule):
             return CosineAnnealingLR(optimizer, self.hparams.max_epochs)
         elif "cosine+warmup" == self.hparams.scheduler:
             cosine = CosineAnnealingLR(
-                optimizer, self.hparams.max_epochs - self.hparams.warmup_epochs
-            )
+                optimizer,
+                self.hparams.max_epochs - self.hparams.warmup_epochs)
             return GradualWarmupScheduler(
                 optimizer,
                 multiplier=self.hparams.warmup_factor,

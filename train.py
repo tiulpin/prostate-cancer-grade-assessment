@@ -24,18 +24,23 @@ def main(hparams: Namespace):
 
     model = CoolSystem(hparams=hparams)
 
-    logger = loggers.TensorBoardLogger(f"logs/", name=experiment_name,)
+    logger = loggers.TensorBoardLogger(
+        f"logs/",
+        name=experiment_name,
+    )
     callbacks = [LearningRateLogger()]
     checkpoint_callback = ModelCheckpoint(
-        filepath=f"weights/{experiment_name}_" + "best_{val_loss:.4f}_{qwk:.4f}",
+        filepath=f"weights/{experiment_name}_" +
+        "best_{val_loss:.4f}_{qwk:.4f}",
         monitor="val_loss",
         save_top_k=10,
         mode="min",
         save_last=True,
     )
-    early_stop_callback = EarlyStopping(
-        monitor="val_loss", patience=13, mode="min", verbose=True
-    )
+    early_stop_callback = EarlyStopping(monitor="val_loss",
+                                        patience=13,
+                                        mode="min",
+                                        verbose=True)
 
     # a weird way to add arguments to Trainer constructor, but we'll take it
     hparams.__dict__["logger"] = logger
@@ -55,9 +60,8 @@ if __name__ == "__main__":
     # TODO: move configuration to *.yaml with Hydra
     parser = ArgumentParser(add_help=False)
 
-    parser.add_argument(
-        "--root_path", default="../input/prostate-cancer-grade-assessment"
-    )
+    parser.add_argument("--root_path",
+                        default="../input/prostate-cancer-grade-assessment")
     parser.add_argument("--resume_from_checkpoint", default=None, type=str)
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--use_cleaned_data", default=True, type=bool)
@@ -93,9 +97,10 @@ if __name__ == "__main__":
     parser.add_argument("--gradient_clip_val", default=10, type=float)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
-    parser.add_argument(
-        "--normalize", choices=["imagenet", "own", "none"], default="imagenet", type=str
-    )
+    parser.add_argument("--normalize",
+                        choices=["imagenet", "own", "none"],
+                        default="imagenet",
+                        type=str)
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)

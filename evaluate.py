@@ -21,7 +21,10 @@ seed_everything(111)
 
 
 def get_test_dataloder(hparams: Namespace) -> DataLoader:
-    test_dataset = PANDADataset(mode=hparams.mode, config=hparams,)
+    test_dataset = PANDADataset(
+        mode=hparams.mode,
+        config=hparams,
+    )
 
     return DataLoader(
         test_dataset,
@@ -33,9 +36,9 @@ def get_test_dataloder(hparams: Namespace) -> DataLoader:
 
 def load_model(model_name: str, weights: str):
     model = CoolSystem.net_mapping(model_name, 5)
-    model.load_state_dict(
-        torch.load(weights, map_location=lambda storage, loc: storage), strict=True
-    )
+    model.load_state_dict(torch.load(
+        weights, map_location=lambda storage, loc: storage),
+        strict=True)
     model.eval()
     model.cuda()
     print("Loaded model {} from checkpoint {}".format(model_name, weights))
@@ -78,15 +81,11 @@ def run_predictions(
                     tta_pred.append(pred)
                     tta_pred_threshold.append(pred_threshold)
 
-                pred = torch.round(
-                    (torch.stack(tta_pred).sum(0).double() / len(tta_transforms))
-                )
+                pred = torch.round((torch.stack(tta_pred).sum(0).double() /
+                                    len(tta_transforms)))
                 pred_threshold = torch.round(
-                    (
-                        torch.stack(tta_pred_threshold).sum(0).double()
-                        / len(tta_transforms)
-                    )
-                )
+                    (torch.stack(tta_pred_threshold).sum(0).double() /
+                     len(tta_transforms)))
 
             else:
                 y_hat = model(x)
@@ -119,17 +118,15 @@ def main(hparams: Namespace):
     gt_class = get_ground_truth(loader)
 
     for model in models:
-        pred, pred_thr = run_predictions(
-            model, loader, hparams.precision, hparams.test_time_aug
-        )
+        pred, pred_thr = run_predictions(model, loader, hparams.precision,
+                                         hparams.test_time_aug)
         predictions.append(pred)
         predictions_threshold.append(pred_thr)
 
     if len(models) > 1:
         predictions = np.array(predictions).sum(axis=0) / len(models)
-        predictions_threshold = np.array(predictions_threshold).sum(axis=0) / len(
-            models
-        )
+        predictions_threshold = np.array(predictions_threshold).sum(
+            axis=0) / len(models)
     else:
         predictions = predictions[0]
         predictions_threshold = predictions_threshold[0]
@@ -138,7 +135,9 @@ def main(hparams: Namespace):
     predictions_threshold = np.rint(predictions_threshold).astype(int)
 
     qwk = cohen_kappa_score(predictions, gt_class, weights="quadratic")
-    qwk_thr = cohen_kappa_score(predictions_threshold, gt_class, weights="quadratic")
+    qwk_thr = cohen_kappa_score(predictions_threshold,
+                                gt_class,
+                                weights="quadratic")
 
     print("QWK with sum strategy: {:.4f}".format(qwk))
     print(confusion_matrix(gt_class, predictions))
@@ -149,15 +148,17 @@ def main(hparams: Namespace):
 if __name__ == "__main__":
     parser = ArgumentParser(add_help=False)
 
-    parser.add_argument(
-        "--root_path", default="../input/prostate-cancer-grade-assessment"
-    )
+    parser.add_argument("--root_path",
+                        default="../input/prostate-cancer-grade-assessment")
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--use_cleaned_data", default=True, type=bool)
 
     parser.add_argument("--precision", default=16, type=int)
     parser.add_argument("--test_time_aug", default=False, type=bool)
-    parser.add_argument("--mode", choices=["val", "holdout"], default="val", type=str)
+    parser.add_argument("--mode",
+                        choices=["val", "holdout"],
+                        default="val",
+                        type=str)
     parser.add_argument("--fold", default=0, type=int)
     parser.add_argument("--batch_size", default=6, type=int)
     parser.add_argument("--num_workers", default=8, type=int)
@@ -166,9 +167,10 @@ if __name__ == "__main__":
     parser.add_argument("--nets", nargs="+", required=True)
 
     parser.add_argument("--use_preprocessed_tiles", default=True, type=bool)
-    parser.add_argument(
-        "--normalize", choices=["imagenet", "own", "none"], default="imagenet", type=str
-    )
+    parser.add_argument("--normalize",
+                        choices=["imagenet", "own", "none"],
+                        default="imagenet",
+                        type=str)
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--image_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)
