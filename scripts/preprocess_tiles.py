@@ -1,4 +1,6 @@
 # coding: utf-8
+from src.datasets.panda import get_tiles
+
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
 import sys
@@ -10,8 +12,6 @@ import skimage.io
 from tqdm import tqdm
 
 sys.path.append(".")
-
-from src.datasets.panda import get_tiles
 
 
 def main(config: Namespace):
@@ -28,9 +28,8 @@ def main(config: Namespace):
 
 if __name__ == "__main__":
     parser = ArgumentParser(add_help=False)
-    parser.add_argument(
-        "--root_path", default="../input/prostate-cancer-grade-assessment"
-    )
+    parser.add_argument("--root_path",
+                        default="../input/prostate-cancer-grade-assessment")
     parser.add_argument("--image_folder", default="train_images")
     parser.add_argument("--tile_size", default=256, type=int)
     parser.add_argument("--num_tiles", default=36, type=int)

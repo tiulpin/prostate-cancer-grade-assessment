@@ -1,4 +1,6 @@
 # coding: utf-8
+from src.pl_module import CoolSystem
+
 __author__ = "sevakon: https://kaggle.com/sevakon"
 
 import sys
@@ -8,8 +10,6 @@ import pytorch_lightning as pl
 import torch
 
 sys.path.append(".")
-
-from src.pl_module import CoolSystem
 
 
 class DummySystem(pl.LightningModule):
@@ -26,8 +26,8 @@ class DummySystem(pl.LightningModule):
 
 
 def main(checkpoint_path: str):
-    pth_path = checkpoint_path[: len(checkpoint_path) - 4] + "pth"
-    model = DummySystem.load_from_checkpoint(checkpoint_path,)
+    pth_path = checkpoint_path[:len(checkpoint_path) - 4] + "pth"
+    model = DummySystem.load_from_checkpoint(checkpoint_path, )
     state_dict = model.net.state_dict()
     torch.save(state_dict, pth_path)
 

@@ -55,11 +55,18 @@ def d4_tta():
         ComposeTTA([]),
         ComposeTTA([Rotate90TTA()]),
         ComposeTTA([Rotate90TTA(), Rotate90TTA()]),
-        ComposeTTA([Rotate90TTA(), Rotate90TTA(), Rotate90TTA()]),
+        ComposeTTA([Rotate90TTA(), Rotate90TTA(),
+                    Rotate90TTA()]),
         ComposeTTA([HorizontalFlipTTA()]),
         ComposeTTA([HorizontalFlipTTA(), Rotate90TTA()]),
-        ComposeTTA([HorizontalFlipTTA(), Rotate90TTA(), Rotate90TTA()]),
-        ComposeTTA([HorizontalFlipTTA(), Rotate90TTA(), Rotate90TTA(), Rotate90TTA()]),
+        ComposeTTA([HorizontalFlipTTA(),
+                    Rotate90TTA(),
+                    Rotate90TTA()]),
+        ComposeTTA(
+            [HorizontalFlipTTA(),
+             Rotate90TTA(),
+             Rotate90TTA(),
+             Rotate90TTA()]),
     ]
 
     return tta_transforms
