@@ -46,7 +46,7 @@ def load_model(model_name: str, weights: str):
 
 
 def get_ground_truth(loader: DataLoader):
-    gt = list()
+    gt = []
 
     for _, y in loader:
         target = y.sum(1)
@@ -62,7 +62,7 @@ def run_predictions(
     precision: int = 16,
     use_tta: bool = False,
 ):
-    preds, preds_threshold = list(), list()
+    preds, preds_threshold = [], []
     tta_transforms = d4_tta()
 
     with torch.no_grad():
@@ -72,7 +72,7 @@ def run_predictions(
                 x = x.half()
 
             if use_tta:
-                tta_pred, tta_pred_threshold = list(), list()
+                tta_pred, tta_pred_threshold = [], []
 
                 for tta in tta_transforms:
                     y_hat = model(tta.batch_augment(x))
@@ -106,7 +106,7 @@ def main(hparams: Namespace):
     ), "Please provide equal number of weights paths and model names"
 
     loader = get_test_dataloder(hparams)
-    models = list()
+    models = []
 
     for model_name, weights_path in zip(hparams.nets, hparams.weights_paths):
         model = load_model(model_name, weights_path)
@@ -114,7 +114,7 @@ def main(hparams: Namespace):
             model.half()
         models.append(model)
 
-    predictions, predictions_threshold = list(), list()
+    predictions, predictions_threshold = [], []
     gt_class = get_ground_truth(loader)
 
     for model in models:
